@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,8 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Check if user is already signed in
-    _checkCurrentUser();
   }
 
   Future<void> _redirectToWebsite(String idToken, String email) async {
@@ -65,25 +64,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _checkCurrentUser() async {
-    final currentUser = _authService.currentGoogleUser;
-    if (currentUser != null) {
-      print('User is already signed in: ${currentUser.displayName}');
-      // Get the ID token and redirect to website
-      final idToken = await _authService.getIdToken();
-      if (idToken != null) {
-        await _redirectToWebsite(idToken, currentUser.email);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
   Future<void> _handleGoogleSignIn() async {
     if (_isLoading) return;
 
@@ -94,35 +74,16 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final userCredential = await _authService.signInWithGoogle();
       if (userCredential != null && mounted) {
-        // Get the ID token for website authentication
         final idToken = await _authService.getIdToken();
         if (idToken != null && mounted) {
           await _redirectToWebsite(idToken, userCredential.user?.email ?? '');
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to get authentication token. Please try again.'),
-                duration: Duration(seconds: 5),
-              ),
-            );
-          }
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Google sign in was cancelled or failed. Please try again.'),
-              duration: Duration(seconds: 5),
-            ),
-          );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error signing in with Google: $e'),
+            content: Text('Error signing in with Google: ${e.toString()}'),
             duration: const Duration(seconds: 5),
           ),
         );
@@ -137,127 +98,163 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final currentUser = _authService.currentGoogleUser;
-    
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7F5), // Light pink background
+      backgroundColor: const Color(0xFFFDF7F5),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Logo and Title Section
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    
-                    // Tagline Section
-                    const Text(
-                      'Every Story\nMatters.',
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'Lora',
-                        fontWeight: FontWeight.w600,
-                        height: 1.2,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'One place to honor, remember,\nand share.',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'Playfair_Display',
-                        fontWeight: FontWeight.w400,
-                        height: 1.3,
-                        fontStyle: FontStyle.italic,
-                        color: Color.fromARGB(255, 54, 54, 54),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 28),
+        child: StreamBuilder<User?>(
+          stream: _authService.authStateChanges,
+          builder: (context, snapshot) {
+            final user = snapshot.data;
 
-                    // Authentication Buttons
-                    if (currentUser == null) ...[
-                      // Scan QR Button
-                      _buildAuthButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => const QRScannerPage()),
-                          );
-                        },
-                        icon: const Icon(Icons.qr_code_scanner, size: 24, color: Color(0xFF1A1A1A)),
-                        label: 'Scan a LoveEver Tag',
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Google Sign In Button
-                      _buildAuthButton(
-                        onPressed: _isLoading ? null : _handleGoogleSignIn,
-                        icon: Image.asset(
-                          'assets/images/google-logo.png',
-                          height: 24,
-                          width: 24,
+            return Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          height: 120,
+                          fit: BoxFit.contain,
                         ),
-                        label: 'Sign in with Google',
                       ),
-                      const SizedBox(height: 12),
+                      
+                      const Text(
+                        'Every Story\nMatters.',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontFamily: 'Lora',
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'One place to honor, remember,\nand share.',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontFamily: 'Playfair_Display',
+                          fontWeight: FontWeight.w400,
+                          height: 1.3,
+                          fontStyle: FontStyle.italic,
+                          color: Color.fromARGB(255, 54, 54, 54),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 28),
 
-                      // Email Sign In Button
-                      _buildAuthButton(
-                        onPressed: _isLoading ? null : () async {
-                          const url = 'https://loveevertagapps.com/Account/Login';
-                          if (await canLaunch(url)) {
-                            await launch(url);
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Could not launch URL')),
-                              );
+                      if (user == null) ...[
+                        // Show Sign-in buttons
+                        _buildAuthButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const QRScannerPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.qr_code_scanner, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Scan a LoveEver Tag',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAuthButton(
+                          onPressed: _isLoading ? null : _handleGoogleSignIn,
+                          icon: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Image.asset(
+                                  'assets/images/google-logo.png',
+                                  height: 24,
+                                  width: 24,
+                                ),
+                          label: _isLoading ? 'Signing in...' : 'Sign in with Google',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAuthButton(
+                          onPressed: _isLoading ? null : () async {
+                            const url = 'https://loveevertagapps.com/Account/Login';
+                            if (await canLaunch(url)) {
+                              await launch(url);
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not launch URL')),
+                                );
+                              }
                             }
-                          }
-                        },
-                        icon: const Icon(Icons.email_outlined, size: 24, color: Color(0xFF1A1A1A)),
-                        label: 'Sign in with Email',
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Sign Up Button
-                      _buildAuthButton(
-                        onPressed: _isLoading ? null : () async {
-                          const url = 'https://loveevertagapps.com/Account/Register';
-                          if (await canLaunch(url)) {
-                            await launch(url);
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Could not launch URL')),
-                              );
+                          },
+                          icon: const Icon(Icons.email_outlined, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Sign in with Email',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAuthButton(
+                          onPressed: _isLoading ? null : () async {
+                            const url = 'https://loveevertagapps.com/Account/Register';
+                            if (await canLaunch(url)) {
+                              await launch(url);
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not launch URL')),
+                                );
+                              }
                             }
-                          }
-                        },
-                        icon: const Icon(Icons.person_add_outlined, size: 24, color: Color(0xFF1A1A1A)),
-                        label: 'Sign Up',
-                      ),
+                          },
+                          icon: const Icon(Icons.person_add_outlined, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Sign Up',
+                        ),
+                      ] else ...[
+                        // Show Logged-in buttons
+                        _buildAuthButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const QRScannerPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.qr_code_scanner, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Scan QR Code',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAuthButton(
+                          onPressed: () async {
+                            final idToken = await _authService.getIdToken();
+                            if (idToken != null && mounted) {
+                              await _redirectToWebsite(idToken, user.email ?? '');
+                            }
+                          },
+                          icon: const Icon(Icons.dashboard_outlined, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Dashboard',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAuthButton(
+                          onPressed: () async {
+                            await _authService.signOut();
+                          },
+                          icon: const Icon(Icons.logout_outlined, size: 28, color: Color(0xFF1A1A1A)),
+                          label: 'Sign Out (${user.displayName ?? 'User'})',
+                        ),
+                      ]
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
