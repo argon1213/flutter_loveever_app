@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "341119275669",
+    "project_id": "loveever-352d5",
+    "storage_bucket": "loveever-352d5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:341119275669:android:031101f2c8855c4d39819c",
+        "android_client_info": {
+          "package_name": "com.love_ever_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "341119275669-2stc7mch343cfavauv5o4pni1qntt1ft.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.love_ever_mobile",
+            "certificate_hash": "f71a9e5413ba9382c667284fc484c958beeed5e5"
+          }
+        },
+        {
+          "client_id": "341119275669-fhj1kiqlj3re8i1ao9fqv1u0o4buil5j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8s4N5ttBG_ktt0QbaQ6BOEFHKdBJ1m4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "341119275669-fhj1kiqlj3re8i1ao9fqv1u0o4buil5j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "341119275669-6m36t5qdqsr22s8hoaed5eusultsdmd1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.loveEverMobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
