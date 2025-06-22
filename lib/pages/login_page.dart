@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final _authService = AuthService();
   bool _isLoading = false;
 
+
   @override
   void initState() {
     super.initState();
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 28),
 
-                      if (user == null) ...[
+                      if (user == null && snapshot.connectionState == ConnectionState.active) ...[
                         // Show Sign-in buttons
                         _buildAuthButton(
                           onPressed: () {
@@ -218,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                           icon: const Icon(Icons.person_add_outlined, size: 28, color: Color(0xFF1A1A1A)),
                           label: 'Sign Up',
                         ),
-                      ] else ...[
+                      ] else if (user != null) ...[
                         // Show Logged-in buttons
                         _buildAuthButton(
                           onPressed: () {
