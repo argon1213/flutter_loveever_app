@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "341119275669-78nanmdmg4orcnmnom5mg1u0f155teee.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.love_ever_mobile",
+            "certificate_hash": "feb42d63519519f06147d9d063ef46273f9d0bc4"
+          }
+        },
+        {
+          "client_id": "341119275669-jhte69ic53j3t0cstqdlsp137e68372n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.love_ever_mobile",
+            "certificate_hash": "9ddd9194096e976fb19e5a1a35babfb1013e210e"
+          }
+        },
+        {
           "client_id": "341119275669-oad33451huqfb9eg0hqtj49m13pqkgvp.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
